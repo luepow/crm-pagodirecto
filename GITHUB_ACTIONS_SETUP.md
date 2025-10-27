@@ -5,9 +5,33 @@
 
 ---
 
+## ⚠️ RECOMENDACIÓN IMPORTANTE
+
+**POR AHORA, USA DEPLOYMENT MANUAL:**
+
+Los workflows de GitHub Actions tienen problemas de configuración que requieren ajustes:
+- Frontend: Estructura de monorepo no compatible con el workflow actual
+- Backend: Requiere configuración manual del archivo `.env` en el servidor
+
+**SOLUCIÓN INMEDIATA:** Usa los scripts de deployment manual que están funcionando perfectamente:
+
+```bash
+cd /Users/lperez/Workspace/Development/fullstack/crm_pd
+
+# Deploy backend
+./deploy-backend.sh --remote
+
+# Deploy frontend
+./deploy-frontend.sh --remote
+```
+
+Los workflows de GitHub Actions funcionan para CI (compilación y testing) pero el deployment automático necesita más configuración.
+
+---
+
 ## 🔧 PROBLEMA IDENTIFICADO
 
-Los workflows de GitHub Actions están configurados pero **NO se ejecutan automáticamente** porque faltan los **GitHub Secrets** necesarios para el despliegue automático al servidor.
+Los workflows de GitHub Actions están configurados pero tienen issues que impiden el despliegue automático:
 
 ---
 
