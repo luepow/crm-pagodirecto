@@ -4,13 +4,13 @@ spring:
 
   # Database Configuration
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:25432/pagodirecto_crm_dev}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/pagodirecto_crm_dev}
     username: ${DATABASE_USERNAME:pagodirecto_dev}
-    password: ${DATABASE_PASSWORD:dev_password_123}
+    password: ${DATABASE_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      minimum-idle: ${DB_POOL_MIN_IDLE:2}
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
