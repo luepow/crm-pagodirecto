@@ -1,0 +1,639 @@
+###############################################################################
+# Docker Compose Configuration - PagoDirecto CRM/ERP System
+#
+# This file orchestrates all services required to run the complete application:
+# - PostgreSQL database with extensions
+# - Spring Boot backend API
+# - React frontend with Vite
+# - Nginx reverse proxy
+# - Adminer database UI
+#
+# Usage:
+#   Development: docker-compose --profile development up -d
+#   Production:  docker-compose --profile production up -d
+#   Testing:     docker-compose --profile testing up -d
+#
+# Note: Docker Compose V2 no longer requires version field
+###############################################################################
+
+###############################################################################
+# NETWORKS
+#
+# Simple Analogy: Think of networks like neighborhoods. All our application
+# services live in the same neighborhood so they can talk to each other easily,
+# but they're isolated from other applications.
+#
+# Technical: Creates an isolated bridge network for inter-service communication
+# with DNS resolution. Services can communicate using service names as hostnames.
+###############################################################################
+networks:
+  pagodirecto_network:
+    driver: bridge
+    name: pagodirecto_network
+    # Let Docker automatically assign a free subnet to avoid conflicts
+
+###############################################################################
+# VOLUMES
+#
+# Simple Analogy: Volumes are like safe storage boxes. Even if we tear down
+# and rebuild our containers, the data in these boxes stays safe.
+#
+# Technical: Named volumes provide persistent storage managed by Docker.
+# Data survives container restarts and updates. Volumes are stored in
+# Docker's managed directory (/var/lib/docker/volumes on Linux).
+###############################################################################
+volumes:
+  # Database storage - PostgreSQL data files
+  postgres_data:
+    driver: local
+    name: pagodirecto_postgres_data
+
+  # Database backups - Automated backup storage
+  postgres_backups:
+    driver: local
+    name: pagodirecto_postgres_backups
+
+  # Maven cache - Speeds up backend builds
+  maven_cache:
+    driver: local
+    name: pagodirecto_maven_cache
+
+  # Frontend node_modules - Persists npm packages for frontend
+  frontend_node_modules:
+    driver: local
+    name: pagodirecto_frontend_node_modules
+
+  frontend_web_node_modules:
+    driver: local
+    name: pagodirecto_frontend_web_node_modules
+
+  frontend_shared_ui_node_modules:
+    driver: local
+    name: pagodirecto_frontend_shared_ui_node_modules
+
+  frontend_design_tokens_node_modules:
+    driver: local
+    name: pagodirecto_frontend_design_tokens_node_modules
+
+name: pagodirecto
+
+###############################################################################
+# SERVICES
+###############################################################################
+services:
+
+  ###############################################################################
+  # PostgreSQL Database
+  #
+  # Simple Analogy: This is like a massive filing cabinet where we store all
+  # our business data - customers, products, sales, etc. It's very organized
+  # and fast at finding information.
+  #
+  # Technical: PostgreSQL 16 with alpine Linux base for minimal footprint.
+  # Includes uuid-ossp and pgcrypto extensions for UUID generation and
+  # cryptographic functions. Configured with performance tuning for moderate
+  # workloads (shared_buffers, work_mem, effective_cache_size).
+  ###############################################################################
+  postgres:
+    image: postgres:16-alpine
+    container_name: pagodirecto_postgres
+    restart: unless-stopped
+
+    # Environment variables
+    environment:
+      # Database credentials - CHANGE IN PRODUCTION!
+      POSTGRES_DB: ${POSTGRES_DB:-pagodirecto_crm}
+      POSTGRES_USER: ${POSTGRES_USER:-pagodirecto}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password_in_production}
+
+      # PostgreSQL configuration
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+
+      # Performance tuning
+      POSTGRES_SHARED_BUFFERS: ${POSTGRES_SHARED_BUFFERS:-256MB}
+      POSTGRES_EFFECTIVE_CACHE_SIZE: ${POSTGRES_EFFECTIVE_CACHE_SIZE:-1GB}
+      POSTGRES_WORK_MEM: ${POSTGRES_WORK_MEM:-16MB}
+      POSTGRES_MAINTENANCE_WORK_MEM: ${POSTGRES_MAINTENANCE_WORK_MEM:-128MB}
+
+      # Logging
+      POSTGRES_LOG_STATEMENT: ${POSTGRES_LOG_STATEMENT:-mod}
+      POSTGRES_LOG_MIN_DURATION_STATEMENT: ${POSTGRES_LOG_MIN_DURATION:-1000}
+
+    # Port mapping: host:container
+    # Using 28xxx ports for PagoDirecto (PD) project isolation
+    ports:
+      - "${POSTGRES_PORT:-28432}:5432"
+
+    # Persistent storage
+    volumes:
+      # Main database data
+      - postgres_data:/var/lib/postgresql/data
+
+      # Initialization scripts (run only on first start)
+      - ./init-db.sh:/docker-entrypoint-initdb.d/01-init-db.sh:ro
+
+      # Backup directory
+      - postgres_backups:/backups
+
+      # Custom PostgreSQL configuration
+      - ./postgres.conf:/etc/postgresql/postgresql.conf:ro
+
+    # Command override with custom config
+    command:
+      - "postgres"
+      - "-c"
+      - "config_file=/etc/postgresql/postgresql.conf"
+
+    # Health check: Verify database is accepting connections
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pagodirecto} -d ${POSTGRES_DB:-pagodirecto_crm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Network configuration
+    networks:
+      pagodirecto_network:
+        aliases:
+          - database
+          - db
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Labels for management
+    labels:
+      com.pagodirecto.service: "database"
+      com.pagodirecto.environment: "${ENVIRONMENT:-development}"
+
+  ###############################################################################
+  # Spring Boot Backend API
+  #
+  # Simple Analogy: This is like the brain of our application. It receives
+  # requests (like "show me all customers"), thinks about them, talks to the
+  # database, and sends back answers.
+  #
+  # Technical: Spring Boot 3.2.5 application running on Java 17. Implements
+  # Clean/Hexagonal architecture with DDD. Includes Spring Security with JWT,
+  # Spring Data JPA, Flyway migrations, and Actuator endpoints for monitoring.
+  ###############################################################################
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: ../infra/docker/Dockerfile.backend
+      args:
+        - MAVEN_OPTS=-Xmx1024m
+        - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-development}
+      target: ${BUILD_TARGET:-production}
+
+    image: pagodirecto/crm-backend:${VERSION:-latest}
+    container_name: pagodirecto_backend
+    restart: unless-stopped
+
+    # Wait for database to be healthy before starting
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    # Environment variables
+    environment:
+      # Spring profiles
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-development}
+
+      # Database connection
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-pagodirecto_crm}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-pagodirecto}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password_in_production}
+
+      # Database connection pool (HikariCP)
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: ${DB_POOL_SIZE:-20}
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: ${DB_POOL_MIN_IDLE:-5}
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: ${DB_CONNECTION_TIMEOUT:-30000}
+      SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT: ${DB_IDLE_TIMEOUT:-600000}
+      SPRING_DATASOURCE_HIKARI_MAX_LIFETIME: ${DB_MAX_LIFETIME:-1800000}
+
+      # JPA configuration
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_SHOW_SQL: ${SHOW_SQL:-false}
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_USE_SQL_COMMENTS: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_SIZE: 20
+      SPRING_JPA_PROPERTIES_HIBERNATE_ORDER_INSERTS: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_ORDER_UPDATES: true
+
+      # Flyway migrations
+      SPRING_FLYWAY_ENABLED: true
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: true
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
+      SPRING_FLYWAY_VALIDATE_ON_MIGRATE: true
+
+      # Security - JWT configuration
+      JWT_SECRET: ${JWT_SECRET:-your-256-bit-secret-key-change-in-production-use-strong-random-value}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+
+      # CORS configuration (updated for PagoDirecto port scheme 28xxx)
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:28000,http://localhost:28888,http://localhost}
+      CORS_ALLOWED_METHODS: ${CORS_ALLOWED_METHODS:-GET,POST,PUT,PATCH,DELETE,OPTIONS}
+      CORS_ALLOWED_HEADERS: ${CORS_ALLOWED_HEADERS:-*}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
+
+      # Server configuration
+      SERVER_PORT: 8080
+      SERVER_COMPRESSION_ENABLED: true
+      SERVER_HTTP2_ENABLED: true
+
+      # Actuator endpoints
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: when_authorized
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: true
+
+      # Logging
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-INFO}
+      LOGGING_LEVEL_COM_PAGODIRECTO: ${LOG_LEVEL_APP:-DEBUG}
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: ${LOG_LEVEL_SECURITY:-INFO}
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL: ${LOG_LEVEL_SQL:-WARN}
+      LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+      # Gemini AI configuration
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+
+      # Java options
+      JAVA_OPTS: >-
+        -Xms512m
+        -Xmx1024m
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=200
+        -XX:+HeapDumpOnOutOfMemoryError
+        -XX:HeapDumpPath=/tmp/heapdump.hprof
+        -Djava.security.egd=file:/dev/./urandom
+        -Duser.timezone=UTC
+
+    # Port mapping
+    # Using 28xxx ports for PagoDirecto (PD) project isolation
+    ports:
+      - "${BACKEND_PORT:-28080}:8080"
+
+    # Volumes
+    volumes:
+      # Source code mount for development hot-reload
+      - ../../backend:/app:delegated
+
+      # Maven cache for faster rebuilds (appuser home is /app in development)
+      - maven_cache:/app/.m2
+
+      # Application logs
+      - ./logs/backend:/app/logs
+
+      # Temporary files
+      - /tmp
+
+    # Health check: Verify Spring Boot Actuator health endpoint
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1536M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Network configuration
+    networks:
+      pagodirecto_network:
+        aliases:
+          - api
+          - backend-api
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Read-only root filesystem (except writable volumes)
+    read_only: false  # Set to true in production after testing
+
+    # Labels
+    labels:
+      com.pagodirecto.service: "backend"
+      com.pagodirecto.environment: "${ENVIRONMENT:-development}"
+
+    # Development profile: Enable hot-reload
+    profiles:
+      - development
+      - production
+
+  ###############################################################################
+  # React Frontend with Nginx
+  #
+  # Simple Analogy: This is the pretty face of our application - the screens
+  # and buttons that users see and click. It's like the storefront of a shop.
+  #
+  # Technical: React 18 application built with Vite, served by Nginx. Includes
+  # TypeScript, TailwindCSS, React Router, React Query for server state,
+  # Zustand for client state. Nginx configured as reverse proxy with gzip
+  # compression, security headers, and SPA routing support.
+  ###############################################################################
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: ../infra/docker/Dockerfile.frontend
+      args:
+        - NODE_ENV=${NODE_ENV:-production}
+        - VITE_API_URL=${VITE_API_URL:-http://localhost/api}
+        - VITE_APP_VERSION=${VERSION:-1.0.0}
+      target: ${BUILD_TARGET:-production}
+
+    image: pagodirecto/crm-frontend:${VERSION:-latest}
+    container_name: pagodirecto_frontend
+    restart: unless-stopped
+
+    # Wait for backend to be healthy
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    # Environment variables
+    environment:
+      # Nginx configuration
+      NGINX_HOST: ${NGINX_HOST:-localhost}
+      NGINX_PORT: 80
+
+      # Backend proxy
+      BACKEND_HOST: backend
+      BACKEND_PORT: 8080
+
+      # Vite environment variables (for development mode)
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:28080/api}
+      NODE_ENV: ${NODE_ENV:-development}
+
+    # Port mapping (development: Vite dev server on 3000, production: Nginx on 80)
+    # Using 28xxx ports for PagoDirecto (PD) project isolation
+    ports:
+      - "${FRONTEND_PORT:-28000}:3000"
+
+    # Volumes
+    volumes:
+      # Mount entire frontend monorepo for access to shared-ui and design-tokens
+      - ../../frontend:/app:delegated
+
+      # Use named volumes for node_modules to preserve Docker-installed packages
+      # This prevents host node_modules from overwriting container's properly-installed deps
+      - frontend_node_modules:/app/node_modules
+      - frontend_web_node_modules:/app/apps/web/node_modules
+      - frontend_shared_ui_node_modules:/app/shared-ui/node_modules
+      - frontend_design_tokens_node_modules:/app/design-tokens/node_modules
+
+      # Logs
+      - ./logs/frontend:/var/log/nginx
+
+    # Health check (different for dev vs prod)
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    # Network configuration
+    networks:
+      pagodirecto_network:
+        aliases:
+          - web
+          - frontend-web
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Read-only root filesystem (except cache and logs)
+    # Disabled in development for Vite hot-reload compatibility
+    read_only: false
+    tmpfs:
+      - /tmp
+      - /var/run
+
+    # Labels
+    labels:
+      com.pagodirecto.service: "frontend"
+      com.pagodirecto.environment: "${ENVIRONMENT:-development}"
+
+    # Profiles
+    profiles:
+      - development
+      - production
+
+  ###############################################################################
+  # Nginx Reverse Proxy (Optional - for production)
+  #
+  # Simple Analogy: This is like a receptionist at the front desk. It receives
+  # all incoming requests and directs them to the right place - either to the
+  # frontend or to the backend API.
+  #
+  # Technical: Nginx reverse proxy with SSL termination (when configured),
+  # load balancing capabilities, request routing, gzip compression, security
+  # headers (CSP, HSTS, X-Frame-Options), and rate limiting.
+  ###############################################################################
+  nginx:
+    image: nginx:alpine
+    container_name: pagodirecto_nginx
+    restart: unless-stopped
+
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+    # Using 28xxx ports for PagoDirecto (PD) project isolation
+    ports:
+      - "${NGINX_HTTP_PORT:-28888}:80"
+      - "${NGINX_HTTPS_PORT:-28443}:443"
+
+    volumes:
+      # Nginx configuration
+      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-proxy-default.conf:/etc/nginx/conf.d/default.conf:ro
+
+      # SSL certificates (when using HTTPS)
+      - ./certs:/etc/nginx/certs:ro
+
+      # Logs
+      - ./logs/nginx:/var/log/nginx
+
+      # Cache
+      - /var/cache/nginx
+
+    environment:
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx
+      FRONTEND_HOST: frontend
+      BACKEND_HOST: backend
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
+
+    networks:
+      pagodirecto_network:
+        aliases:
+          - proxy
+          - gateway
+
+    security_opt:
+      - no-new-privileges:true
+
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
+      - /var/cache/nginx
+
+    labels:
+      com.pagodirecto.service: "nginx-proxy"
+      com.pagodirecto.environment: "${ENVIRONMENT:-development}"
+
+    profiles:
+      - production
+
+  ###############################################################################
+  # Adminer - Database Management UI
+  #
+  # Simple Analogy: This is like a special tool that lets us peek inside our
+  # filing cabinet (database) and see, edit, or organize our data. It's like
+  # a magnifying glass for our database.
+  #
+  # Technical: Adminer is a lightweight database management tool (alternative
+  # to phpMyAdmin). Provides web interface for database administration, SQL
+  # queries, schema viewing, data import/export. Supports PostgreSQL, MySQL,
+  # SQLite, and more.
+  ###############################################################################
+  adminer:
+    image: adminer:latest
+    container_name: pagodirecto_adminer
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    environment:
+      # Adminer configuration
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: nette
+      ADMINER_PLUGINS: tables-filter tinymce
+
+    # Using 28xxx ports for PagoDirecto (PD) project isolation
+    ports:
+      - "${ADMINER_PORT:-28081}:8080"
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+    networks:
+      pagodirecto_network:
+        aliases:
+          - dbadmin
+
+    security_opt:
+      - no-new-privileges:true
+
+    labels:
+      com.pagodirecto.service: "adminer"
+      com.pagodirecto.environment: "${ENVIRONMENT:-development}"
+
+    profiles:
+      - development
+      - production
+
+###############################################################################
+# CONFIGURATION NOTES
+#
+# Security Considerations:
+# 1. Change all default passwords in production
+# 2. Use Docker secrets for sensitive data in production
+# 3. Enable SSL/TLS for production deployments
+# 4. Configure firewall rules to restrict access
+# 5. Regular security updates for base images
+# 6. Implement network policies in Kubernetes
+#
+# Performance Optimization:
+# 1. Adjust resource limits based on workload
+# 2. Enable HTTP/2 in Nginx for frontend
+# 3. Configure database connection pooling
+# 4. Use CDN for static assets in production
+# 5. Enable application-level caching (Redis)
+# 6. Database query optimization and indexing
+#
+# Monitoring & Observability:
+# 1. Integrate Prometheus for metrics collection
+# 2. Add Grafana for visualization
+# 3. Configure ELK stack for log aggregation
+# 4. Set up alerts for critical metrics
+# 5. Implement distributed tracing (Jaeger/Zipkin)
+#
+# Backup Strategy:
+# 1. Automated daily database backups
+# 2. Backup retention policy (30 days)
+# 3. Test restore procedures regularly
+# 4. Offsite backup storage
+# 5. Point-in-time recovery capability
+#
+# High Availability:
+# 1. Multi-instance backend deployment
+# 2. Database replication (primary-replica)
+# 3. Load balancing with health checks
+# 4. Auto-scaling policies
+# 5. Disaster recovery procedures
+###############################################################################

@@ -1,0 +1,46 @@
+package com.pagodirecto.seguridad.application.dto;
+
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * DTO: CreateRolRequest
+ *
+ * Request DTO para crear un nuevo rol
+ *
+ * @author PagoDirecto Security Team
+ * @version 1.0
+ * @since 2025-10-13
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateRolRequest {
+
+    @NotNull(message = "La unidad de negocio es obligatoria")
+    private UUID unidadNegocioId;
+
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
+    private String nombre;
+
+    @Size(max = 1000, message = "La descripción no puede exceder 1000 caracteres")
+    private String descripcion;
+
+    @Size(max = 100, message = "El departamento no puede exceder 100 caracteres")
+    private String departamento;
+
+    @Min(value = 0, message = "El nivel jerárquico debe ser mayor o igual a 0")
+    @Max(value = 10, message = "El nivel jerárquico debe ser menor o igual a 10")
+    @Builder.Default
+    private Integer nivelJerarquico = 0;
+
+    private Set<UUID> permisoIds;
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@crm-pd/design-tokens",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PagoDirecto BrandBook 2024 Design Tokens",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./colors": "./colors.ts",
+    "./typography": "./typography.ts",
+    "./spacing": "./spacing.ts",
+    "./animations": "./animations.ts"
+  }
+}

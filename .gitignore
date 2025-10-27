@@ -1,0 +1,266 @@
+# ========================================
+# PagoDirecto CRM - .gitignore
+# ========================================
+
+# ========================================
+# SECRETS Y CONFIGURACIÓN SENSIBLE
+# ========================================
+.env
+.env.*
+!.env.example
+*.env.backup
+
+# Archivos con credenciales (usaremos templates en su lugar)
+backend/ecosystem.config.js
+ecosystem.config.js
+
+# ========================================
+# BACKEND (Java/Spring Boot)
+# ========================================
+
+# Maven
+backend/application/target/
+backend/**/target/
+*.jar
+!backend/.mvn/wrapper/maven-wrapper.jar
+*.war
+*.ear
+*.class
+
+# Build artifacts
+backend/build/
+backend/out/
+
+# Logs
+backend/logs/
+backend/**/*.log
+*.log
+
+# IntelliJ IDEA
+backend/.idea/
+backend/**/*.iml
+backend/**/*.iws
+backend/**/*.ipr
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.metadata/
+
+# NetBeans
+backend/nbproject/
+backend/nbbuild/
+backend/dist/
+backend/nbdist/
+
+# VS Code
+backend/.vscode/
+backend/**/.vscode/
+
+# Temporary files
+backend/**/*.swp
+backend/**/*.swo
+backend/**/*~
+
+# ========================================
+# FRONTEND (React/Vite)
+# ========================================
+
+# Dependencies
+frontend/node_modules/
+frontend/**/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Production builds
+frontend/apps/web/dist/
+frontend/apps/web/build/
+frontend/**/dist/
+frontend/**/build/
+frontend/**/.next/
+frontend/**/.turbo/
+frontend/**/.vite/
+
+# Testing
+frontend/coverage/
+frontend/**/.nyc_output/
+
+# Logs
+frontend/**/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+frontend/.env.local
+frontend/.env.production
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Turbo
+frontend/.turbo/
+
+# Storybook
+frontend/storybook-static/
+
+# ========================================
+# NGINX
+# ========================================
+
+# Logs de Nginx
+logs/
+nginx-access.log
+nginx-error.log
+*.access.log
+*.error.log
+
+# ========================================
+# PM2
+# ========================================
+
+# PM2 runtime files
+.pm2/
+pm2-*.log
+
+# ========================================
+# BASE DE DATOS
+# ========================================
+
+# Backups de base de datos
+*.sql.backup
+*.sql.gz
+backup/
+backups/
+
+# ========================================
+# SISTEMA OPERATIVO
+# ========================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ========================================
+# IDEs Y EDITORES
+# ========================================
+
+# VSCode
+.vscode/
+!.vscode/settings.json.example
+!.vscode/extensions.json.example
+*.code-workspace
+
+# JetBrains IDEs (IntelliJ, WebStorm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+
+# ========================================
+# DOCUMENTACIÓN TEMPORAL
+# ========================================
+
+# Documentación generada automáticamente
+docs/generated/
+site/
+
+# ========================================
+# TESTING Y COVERAGE
+# ========================================
+
+# Test coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# Test results
+test-results/
+junit.xml
+
+# ========================================
+# DOCKER (si se usa en el futuro)
+# ========================================
+
+# Docker volumes
+docker/volumes/
+docker/data/
+
+# ========================================
+# CI/CD
+# ========================================
+
+# Archivos temporales de CI
+.gitlab-ci-local/
+.github/workflows/*.log
+
+# ========================================
+# ARCHIVOS DE CONFIGURACIÓN TEMPORAL
+# ========================================
+
+# Archivos de respaldo
+*.backup
+*.bak
+*.tmp
+*.temp
+
+# Archivos de intercambio
+*.swp
+*.swo
+
+# ========================================
+# NOTAS Y TODO
+# ========================================
+
+# Notas personales
+TODO.txt
+NOTES.txt
+notes/
+personal/

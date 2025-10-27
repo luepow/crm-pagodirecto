@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.pagodirecto</groupId>
+        <artifactId>crm-erp-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>tareas</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Tareas - Tasks Domain</name>
+    <description>Task management, activities tracking, calendar events and scheduling</description>
+
+    <dependencies>
+        <!-- Internal Dependencies -->
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>core-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>seguridad</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>clientes</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>oportunidades</artifactId>
+        </dependency>
+
+        <!-- MapStruct for DTO mapping -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+
+        <!-- SpringDoc OpenAPI for API documentation -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+    </dependencies>
+</project>

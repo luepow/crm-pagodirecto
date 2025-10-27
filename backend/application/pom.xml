@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.pagodirecto</groupId>
+        <artifactId>crm-erp-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>application</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Application - Main Module</name>
+    <description>Main Spring Boot application module</description>
+
+    <dependencies>
+        <!-- Internal modules -->
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>core-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>seguridad</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>clientes</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>oportunidades</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>tareas</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>productos</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>ventas</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pagodirecto</groupId>
+            <artifactId>reportes</artifactId>
+        </dependency>
+
+        <!-- SpringDoc OpenAPI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <!-- JWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

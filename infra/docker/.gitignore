@@ -1,0 +1,28 @@
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Database volumes (if using local bind mounts)
+data/
+postgres-data/
+
+# Certificates
+certs/
+*.pem
+*.crt
+*.key
+
+# Backups
+backups/
+*.sql
+*.dump
+
+# Temporary files
+tmp/
+temp/
+*.tmp

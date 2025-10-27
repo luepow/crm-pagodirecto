@@ -1,0 +1,298 @@
+BACKEND MODULE STRUCTURE - QUICK REFERENCE
+==========================================
+
+All 7 domain modules have been created with the following structure:
+
+backend/
+├── pom.xml (parent POM)
+├── core-domain/
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/pagodirecto/core/{domain,application,infrastructure}
+│       ├── main/resources/
+│       └── test/
+│
+├── seguridad/ [Authentication & Authorization]
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/pagodirecto/seguridad/
+│       │   ├── domain/        (User, Role, Permission entities)
+│       │   ├── application/   (Authentication use cases)
+│       │   ├── infrastructure/ (JWT services, repositories)
+│       │   └── api/           (REST controllers)
+│       ├── main/resources/
+│       └── test/
+│
+├── clientes/ [Customer Management]
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/pagodirecto/clientes/
+│       │   ├── domain/        (Cliente, Contacto entities)
+│       │   ├── application/   (Customer management use cases)
+│       │   ├── infrastructure/ (Repositories)
+│       │   └── api/           (REST controllers)
+│       ├── main/resources/
+│       └── test/
+│
+├── oportunidades/ [Sales Opportunities]
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/pagodirecto/oportunidades/
+│       │   ├── domain/        (Oportunidad entities)
+│       │   ├── application/   (Pipeline management use cases)
+│       │   ├── infrastructure/ (Repositories)
+│       │   └── api/           (REST controllers)
+│       ├── main/resources/
+│       └── test/
+│
+├── tareas/ [Task Management]
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/pagodirecto/tareas/
+│       │   ├── domain/        (Tarea, Evento entities)
+│       │   ├── application/   (Task management use cases)
+│       │   ├── infrastructure/ (Repositories)
+│       │   └── api/           (REST controllers)
+│       ├── main/resources/
+│       └── test/
+│
+├── productos/ [Product Catalog]
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/pagodirecto/productos/
+│       │   ├── domain/        (Producto entities)
+│       │   ├── application/   (Catalog management use cases)
+│       │   ├── infrastructure/ (Repositories)
+│       │   └── api/           (REST controllers)
+│       ├── main/resources/
+│       └── test/
+│
+├── ventas/ [Sales Operations]
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/pagodirecto/ventas/
+│       │   ├── domain/        (Cotizacion, Pedido, Factura entities)
+│       │   ├── application/   (Sales process use cases)
+│       │   ├── infrastructure/ (Repositories)
+│       │   └── api/           (REST controllers)
+│       ├── main/resources/
+│       └── test/
+│
+├── reportes/ [Reports & Analytics]
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/pagodirecto/reportes/
+│       │   ├── domain/        (Reporte, Dashboard entities)
+│       │   ├── application/   (Report generation use cases)
+│       │   ├── infrastructure/ (Repositories, BI integrations)
+│       │   └── api/           (REST controllers)
+│       ├── main/resources/
+│       └── test/
+│
+└── application/ [Main Spring Boot Application]
+    ├── pom.xml
+    └── src/
+        ├── main/java/com/pagodirecto/application/
+        │   └── CrmErpApplication.java (Main class)
+        ├── main/resources/
+        │   └── application.yml
+        └── test/
+
+
+MODULE DEPENDENCIES
+===================
+
+core-domain
+    ↓
+seguridad (adds: JWT)
+    ↓
+    ├── clientes
+    │       ↓
+    │       ├── oportunidades
+    │       │       ↓
+    │       │       └── tareas (depends on: clientes, oportunidades)
+    │       │
+    │       └── tareas (depends on: clientes)
+    │
+    ├── productos
+    │
+    └── ventas (depends on: clientes, oportunidades, productos)
+            ↓
+        reportes (depends on: all business modules)
+
+
+POM.XML FILES CREATED
+======================
+
+✓ /Users/lperez/Workspace/Development/next/crm_pd/backend/seguridad/pom.xml
+✓ /Users/lperez/Workspace/Development/next/crm_pd/backend/clientes/pom.xml
+✓ /Users/lperez/Workspace/Development/next/crm_pd/backend/oportunidades/pom.xml
+✓ /Users/lperez/Workspace/Development/next/crm_pd/backend/tareas/pom.xml
+✓ /Users/lperez/Workspace/Development/next/crm_pd/backend/productos/pom.xml
+✓ /Users/lperez/Workspace/Development/next/crm_pd/backend/ventas/pom.xml
+✓ /Users/lperez/Workspace/Development/next/crm_pd/backend/reportes/pom.xml
+
+
+JAVA PACKAGE STRUCTURE
+=======================
+
+Each module has the following Java package structure:
+
+com.pagodirecto.{module}.domain
+    - Core business entities
+    - Value objects
+    - Domain events
+    - Domain services
+    - Repository interfaces (ports)
+
+com.pagodirecto.{module}.application
+    - Use cases
+    - Application services
+    - DTOs
+    - Mappers (MapStruct)
+
+com.pagodirecto.{module}.infrastructure
+    - Repository implementations (adapters)
+    - JPA entities (if separate from domain)
+    - External service integrations
+    - Configuration classes
+
+com.pagodirecto.{module}.api
+    - REST controllers
+    - Request/Response models
+    - Exception handlers
+    - OpenAPI documentation
+
+
+COMMON DEPENDENCIES (from parent)
+==================================
+
+All modules inherit:
+- Spring Boot 3.2.5
+- Spring Web
+- Spring Data JPA
+- Spring Security
+- Spring Validation
+- Spring Actuator
+- PostgreSQL driver
+- Flyway (migrations)
+- Lombok
+- JUnit 5 + Spring Test
+
+
+MODULE-SPECIFIC DEPENDENCIES
+=============================
+
+seguridad:
+    - core-domain
+    - JJWT (JWT library)
+    - MapStruct
+    - SpringDoc OpenAPI
+
+clientes:
+    - core-domain
+    - seguridad
+    - MapStruct
+    - SpringDoc OpenAPI
+
+oportunidades:
+    - core-domain
+    - seguridad
+    - clientes
+    - MapStruct
+    - SpringDoc OpenAPI
+
+tareas:
+    - core-domain
+    - seguridad
+    - clientes
+    - oportunidades
+    - MapStruct
+    - SpringDoc OpenAPI
+
+productos:
+    - core-domain
+    - seguridad
+    - MapStruct
+    - SpringDoc OpenAPI
+
+ventas:
+    - core-domain
+    - seguridad
+    - clientes
+    - oportunidades
+    - productos
+    - MapStruct
+    - SpringDoc OpenAPI
+
+reportes:
+    - core-domain
+    - seguridad
+    - clientes
+    - oportunidades
+    - productos
+    - ventas
+    - MapStruct
+    - SpringDoc OpenAPI
+
+
+NEXT STEPS
+==========
+
+1. Implement domain entities in each module's domain package
+2. Create repository interfaces in domain layer
+3. Implement repositories in infrastructure layer
+4. Define use cases in application layer
+5. Create REST controllers in API layer
+6. Write unit and integration tests
+7. Create Flyway database migrations in src/main/resources/db/migration/
+8. Document APIs with OpenAPI annotations
+9. Configure module-specific security rules
+10. Test inter-module communication
+
+
+BUILD COMMANDS
+==============
+
+# Build all modules
+mvn clean install
+
+# Build specific module
+mvn clean install -pl seguridad
+
+# Run tests
+mvn test
+
+# Skip tests
+mvn clean install -DskipTests
+
+# Check dependencies
+mvn dependency:tree
+
+# Run application
+mvn spring-boot:run -pl application
+
+
+NOTES
+=====
+
+- All modules follow Clean/Hexagonal Architecture
+- Each module is a bounded context (DDD)
+- No circular dependencies allowed
+- Domain layer is independent of infrastructure
+- Use domain events for inter-module communication
+- Each module can have its own database schema
+- All tables should use UUID primary keys
+- Implement soft deletes with deleted_at timestamp
+- Add audit fields: created_at, updated_at, created_by, updated_by
+- Use Flyway for database migrations
+- Follow repository pattern for data access
+- Use MapStruct for DTO mapping
+- Document all APIs with OpenAPI/Swagger
+- Maintain >80% test coverage
+- Follow SOLID principles
+
+For detailed documentation, see:
+- backend/MODULES.md (comprehensive module documentation)
+- backend/pom.xml (parent POM configuration)
+- CLAUDE.md (project guidelines and standards)
