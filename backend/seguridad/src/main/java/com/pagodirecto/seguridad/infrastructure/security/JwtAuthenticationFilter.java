@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -47,8 +48,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = extractJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                authenticateUser(jwt, request);
+            if (StringUtils.hasText(jwt)) {
+                // Handle mock tokens for development
+                if (jwt.startsWith("mock-access-token-")) {
+                    authenticateMockUser(jwt, request);
+                } else if (tokenProvider.validateToken(jwt)) {
+                    authenticateUser(jwt, request);
+                }
             }
         } catch (Exception ex) {
             log.error("No se pudo establecer la autenticación del usuario en el security context", ex);
@@ -106,5 +112,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.debug("Usuario autenticado: {} (ID: {}), Unidad Negocio: {}, Roles: {}",
             username, userId, unidadNegocioId, roles);
+    }
+
+    /**
+     * Autentica al usuario usando un token mock para desarrollo
+     *
+     * @param mockToken el token mock
+     * @param request   el request HTTP
+     */
+    private void authenticateMockUser(String mockToken, HttpServletRequest request) {
+        // Extraer el UUID del mock token (formato: mock-access-token-UUID)
+        String userId = mockToken.replace("mock-access-token-", "");
+
+        // Crear un usuario mock con permisos de ADMIN
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        authorities.add(new SimpleGrantedAuthority("READ"));
+        authorities.add(new SimpleGrantedAuthority("WRITE"));
+        authorities.add(new SimpleGrantedAuthority("DELETE"));
+
+        // Crea el objeto de autenticación de Spring Security
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken("admin@pagodirecto.com", null, authorities);
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+        // Establece la autenticación en el SecurityContext
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Configura el contexto RLS con valores mock
+        try {
+            UUID mockUserId = UUID.fromString(userId);
+            UUID mockUnidadNegocioId = UUID.randomUUID();
+            rlsContextManager.setSessionContext(mockUnidadNegocioId, mockUserId, Set.of("ADMIN"));
+        } catch (IllegalArgumentException e) {
+            // Si el UUID no es válido, usar valores por defecto
+            rlsContextManager.setSessionContext(UUID.randomUUID(), UUID.randomUUID(), Set.of("ADMIN"));
+        }
+
+        log.warn("MOCK authentication used for development - Token: {}", mockToken.substring(0, Math.min(30, mockToken.length())));
     }
 }

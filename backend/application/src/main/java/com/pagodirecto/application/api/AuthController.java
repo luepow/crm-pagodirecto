@@ -41,16 +41,10 @@ public class AuthController {
             UUID userId = UUID.randomUUID();
             UUID unidadNegocioId = UUID.randomUUID();
 
-            // Generate real JWT tokens using JwtTokenProvider
-            String accessToken = jwtTokenProvider.generateToken(
-                userId,
-                email,
-                unidadNegocioId,
-                Set.of("ADMIN"),
-                Set.of("READ", "WRITE", "DELETE")
-            );
-
-            String refreshToken = jwtTokenProvider.generateRefreshToken(userId);
+            // TODO: Implement real JWT token generation when we have Usuario service
+            // For now, using mock tokens until we implement proper authentication
+            String accessToken = "mock-access-token-" + userId;
+            String refreshToken = "mock-refresh-token-" + userId;
 
             Map<String, Object> response = Map.of(
                     "accessToken", accessToken,
