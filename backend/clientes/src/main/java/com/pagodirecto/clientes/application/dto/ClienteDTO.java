@@ -1,12 +1,9 @@
 package com.pagodirecto.clientes.application.dto;
 
-import com.pagodirecto.clientes.domain.ClienteStatus;
-import com.pagodirecto.clientes.domain.ClienteTipo;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * DTO: Cliente
@@ -24,50 +21,38 @@ import java.util.UUID;
 @Builder
 public class ClienteDTO {
 
-    private UUID id;
-
-    @NotNull(message = "La unidad de negocio es obligatoria")
-    private UUID unidadNegocioId;
-
-    @NotBlank(message = "El código es obligatorio")
-    @Size(max = 50, message = "El código no puede exceder 50 caracteres")
-    private String codigo;
+    private Long id;
 
     @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 255, message = "El nombre no puede exceder 255 caracteres")
+    @Size(max = 200, message = "El nombre no puede exceder 200 caracteres")
     private String nombre;
 
+    @NotBlank(message = "El email es obligatorio")
     @Email(message = "El email debe ser válido")
-    @Size(max = 255, message = "El email no puede exceder 255 caracteres")
+    @Size(max = 150, message = "El email no puede exceder 150 caracteres")
     private String email;
 
-    @Size(max = 50, message = "El teléfono no puede exceder 50 caracteres")
+    @Size(max = 20, message = "El teléfono no puede exceder 20 caracteres")
     private String telefono;
 
-    @NotNull(message = "El tipo es obligatorio")
-    private ClienteTipo tipo;
+    private String direccion;
+
+    @Size(max = 100, message = "La ciudad no puede exceder 100 caracteres")
+    private String ciudad;
+
+    @Size(max = 100, message = "El país no puede exceder 100 caracteres")
+    private String pais;
+
+    @Size(max = 20, message = "El código postal no puede exceder 20 caracteres")
+    private String codigoPostal;
 
     @Size(max = 20, message = "El RFC no puede exceder 20 caracteres")
     private String rfc;
 
-    @Size(max = 255, message = "La razón social no puede exceder 255 caracteres")
-    private String razonSocial;
-
-    @NotNull(message = "El status es obligatorio")
-    private ClienteStatus status;
-
-    @Size(max = 50, message = "El segmento no puede exceder 50 caracteres")
-    private String segmento;
-
-    @Size(max = 50, message = "La fuente no puede exceder 50 caracteres")
-    private String fuente;
-
-    private UUID propietarioId;
-
-    private String notas;
+    private Boolean activo;
 
     private Instant createdAt;
-    private UUID createdBy;
+    private Long createdBy;
     private Instant updatedAt;
-    private UUID updatedBy;
+    private Long updatedBy;
 }
