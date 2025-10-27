@@ -28,11 +28,17 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
-  type: string;
-  username: string;
-  email: string;
-  roles: string[];
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+  user: {
+    id: string;
+    email: string;
+    nombre: string;
+    apellido: string;
+    rol: string;
+  };
 }
 
 export interface RefreshTokenRequest {

@@ -18,6 +18,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@shar
 import { login } from '../../lib/api/auth';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { getErrorMessage } from '../../lib/api/client';
+import type { User } from '../../lib/api/types';
 
 /**
  * Login form validation schema
@@ -51,19 +52,19 @@ export const LoginPage: React.FC = () => {
       const response = await login(data);
 
       // Map backend response to expected format
-      const user = {
-        id: response.username,  // Use username as id temporarily
-        email: response.email,
-        nombre: response.username,
-        apellido: '',
-        rol: 'ADMIN' as const,
+      const user: User = {
+        id: response.user.id,
+        email: response.user.email,
+        nombre: response.user.nombre,
+        apellido: response.user.apellido,
+        rol: response.user.rol as 'ADMIN' | 'MANAGER' | 'SALES_REP' | 'USER',
         unidadNegocioId: '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      // Backend returns token, not accessToken/refreshToken
-      setAuth(user, response.token, response.token);
+      // Backend returns accessToken and refreshToken
+      setAuth(user, response.accessToken, response.refreshToken);
       toast.success('Bienvenido a PagoDirecto CRM');
       navigate('/dashboard');
     } catch (error) {
