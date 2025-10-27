@@ -47,14 +47,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         try {
             String jwt = extractJwtFromRequest(request);
+            log.warn("DEBUG - JWT extracted: {}", jwt != null ? jwt.substring(0, Math.min(30, jwt.length())) : "null");
 
             if (StringUtils.hasText(jwt)) {
+                log.warn("DEBUG - JWT has text, checking if mock...");
                 // Handle mock tokens for development
                 if (jwt.startsWith("mock-access-token-")) {
+                    log.warn("DEBUG - IS MOCK TOKEN! Authenticating...");
                     authenticateMockUser(jwt, request);
                 } else if (tokenProvider.validateToken(jwt)) {
+                    log.warn("DEBUG - Real token validated");
                     authenticateUser(jwt, request);
+                } else {
+                    log.warn("DEBUG - Token validation failed");
                 }
+            } else {
+                log.warn("DEBUG - No JWT found in request");
             }
         } catch (Exception ex) {
             log.error("No se pudo establecer la autenticación del usuario en el security context", ex);
