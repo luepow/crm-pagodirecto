@@ -11,9 +11,9 @@ import type { LoginRequest, LoginResponse, User } from './types';
  * Login user
  */
 export const login = async (credentials: LoginRequest): Promise<LoginResponse> => {
-  // Backend expects username field, but we receive email from the form
+  // Backend mock expects email field
   const loginData = {
-    username: credentials.email,  // Map email to username
+    email: credentials.email,
     password: credentials.password
   };
   const response = await apiClient.post<LoginResponse>('/v1/auth/login', loginData);

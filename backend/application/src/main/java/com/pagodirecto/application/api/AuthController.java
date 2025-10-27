@@ -24,12 +24,14 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
-        log.info("Intento de login para usuario: {}", request.get("email"));
-
-        String email = request.get("email");
+        // Soportar tanto "email" como "username" en el request
+        String email = request.get("email") != null ? request.get("email") : request.get("username");
         String password = request.get("password");
 
-        if ("admin@pagodirecto.com".equals(email) && "admin123".equals(password)) {
+        log.info("Intento de login para usuario: {}", email);
+
+        // Soportar múltiples usuarios de prueba
+        if (("admin@pagodirecto.com".equals(email) || "admin@admin.com".equals(email)) && "admin123".equals(password)) {
             String userId = UUID.randomUUID().toString();
 
             // Mock tokens for development
