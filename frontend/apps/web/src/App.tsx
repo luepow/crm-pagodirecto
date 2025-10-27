@@ -90,6 +90,7 @@ export const App: React.FC = () => {
             <Route path="departamentos" element={<DepartamentosPage />} />
 
             {/* Seguridad routes */}
+            <Route path="seguridad" element={<UsuariosPage />} />
             <Route path="roles" element={<RolesPage />} />
             <Route path="permisos" element={<PermisosPage />} />
 

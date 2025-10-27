@@ -18,8 +18,6 @@ import {
   Settings,
   ChevronLeft,
   Shield,
-  FileText,
-  DollarSign,
 } from 'lucide-react';
 import { cn } from '@shared-ui/utils';
 import { useAuthStore } from '../../lib/stores/authStore';
@@ -71,28 +69,12 @@ const navItems: NavItem[] = [
     icon: <ShoppingCart size={20} />,
     href: '/ventas',
     roles: ['ADMIN', 'MANAGER', 'SALES_REP'],
-    comingSoon: true,
-  },
-  {
-    label: 'Pagos',
-    icon: <DollarSign size={20} />,
-    href: '/pagos',
-    roles: ['ADMIN', 'MANAGER'],
-    comingSoon: true,
   },
   {
     label: 'Reportes',
     icon: <BarChart3 size={20} />,
     href: '/reportes',
     roles: ['ADMIN', 'MANAGER'],
-    comingSoon: true,
-  },
-  {
-    label: 'Contratos',
-    icon: <FileText size={20} />,
-    href: '/contratos',
-    roles: ['ADMIN', 'MANAGER'],
-    comingSoon: true,
   },
   {
     label: 'Seguridad',
