@@ -18,7 +18,7 @@ import java.util.UUID;
  * - Password: admin123
  */
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/v1/auth")
 @Slf4j
 public class AuthController {
 
