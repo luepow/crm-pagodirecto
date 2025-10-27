@@ -29,8 +29,8 @@ DIST_DIR="$FRONTEND_DIR/dist"
 
 # Remote server configuration (configure según tu servidor)
 REMOTE_USER="${REMOTE_USER:-root}"
-REMOTE_HOST="${REMOTE_HOST:-your-server.com}"
-REMOTE_PATH="${REMOTE_PATH:-/opt/crm-frontend}"
+REMOTE_HOST="${REMOTE_HOST:-128.199.13.76}"
+REMOTE_PATH="${REMOTE_PATH:-/var/www/crm-pd}"
 NGINX_CONF="${NGINX_CONF:-/etc/nginx/nginx.conf}"
 
 # Functions
@@ -166,7 +166,7 @@ elif [ "$DEPLOY_MODE" == "remote" ]; then
 
     # Crear backup del frontend anterior en el servidor
     print_info "Creando backup del frontend anterior..."
-    ssh "$REMOTE_USER@$REMOTE_HOST" "cd $REMOTE_PATH && [ -d dist ] && mv dist dist.backup.$(date +%Y%m%d_%H%M%S) || true"
+    ssh "$REMOTE_USER@$REMOTE_HOST" "cd $(dirname $REMOTE_PATH) && [ -d $(basename $REMOTE_PATH) ] && cp -r $(basename $REMOTE_PATH) $(basename $REMOTE_PATH).backup.$(date +%Y%m%d_%H%M%S) || true"
 
     # Crear directorio si no existe
     print_info "Asegurando que el directorio remoto existe..."
@@ -177,10 +177,11 @@ elif [ "$DEPLOY_MODE" == "remote" ]; then
 
     if command -v rsync &> /dev/null; then
         # Usar rsync si está disponible (más eficiente)
-        rsync -avz --delete "$DIST_DIR/" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/dist/"
+        # Deploy directamente al directorio de Nginx, no a un subdirectorio dist/
+        rsync -avz --delete "$DIST_DIR/" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/"
     else
         # Fallback a scp si rsync no está disponible
-        scp -r "$DIST_DIR" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/"
+        scp -r "$DIST_DIR/"* "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/"
     fi
 
     if [ $? -ne 0 ]; then
