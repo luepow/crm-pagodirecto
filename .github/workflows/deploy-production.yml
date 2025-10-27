@@ -58,7 +58,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm install
 
       - name: Build frontend
         working-directory: frontend/apps/web
@@ -97,6 +97,11 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} \
           "mkdir -p ${{ secrets.REMOTE_BACKEND_PATH }}/logs"
+
+      - name: Upload PM2 ecosystem config
+        run: |
+          scp -o StrictHostKeyChecking=no backend/ecosystem.config.js \
+          ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:${{ secrets.REMOTE_BACKEND_PATH }}/ecosystem.config.js
 
       - name: Create backup on server
         run: |
