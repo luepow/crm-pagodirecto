@@ -29,7 +29,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
     navigate('/login');
   };
 
-  const getInitials = (nombre: string, apellido: string) => {
+  const getInitials = (nombre?: string, apellido?: string) => {
+    if (!nombre || !apellido) return 'U';
     return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
   };
 
