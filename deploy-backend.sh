@@ -15,6 +15,10 @@
 
 set -e  # Exit on error
 
+# Configure Java 21
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+export PATH="$JAVA_HOME/bin:$PATH"
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
