@@ -1,12 +1,8 @@
 package com.pagodirecto.clientes.application.service;
 
 import com.pagodirecto.clientes.application.dto.ClienteDTO;
-import com.pagodirecto.clientes.domain.Cliente;
-import com.pagodirecto.clientes.domain.ClienteStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.UUID;
 
 /**
  * Servicio: Cliente
@@ -23,36 +19,28 @@ public interface ClienteService {
      * Crea un nuevo cliente
      *
      * @param clienteDTO datos del cliente
-     * @param usuarioId UUID del usuario que crea el registro
+     * @param usuarioId ID del usuario que crea el registro
      * @return DTO del cliente creado
      */
-    ClienteDTO crear(ClienteDTO clienteDTO, UUID usuarioId);
+    ClienteDTO crear(ClienteDTO clienteDTO, Long usuarioId);
 
     /**
      * Actualiza un cliente existente
      *
-     * @param id UUID del cliente
+     * @param id ID del cliente
      * @param clienteDTO datos actualizados
-     * @param usuarioId UUID del usuario que actualiza
+     * @param usuarioId ID del usuario que actualiza
      * @return DTO del cliente actualizado
      */
-    ClienteDTO actualizar(UUID id, ClienteDTO clienteDTO, UUID usuarioId);
+    ClienteDTO actualizar(Long id, ClienteDTO clienteDTO, Long usuarioId);
 
     /**
      * Busca un cliente por ID
      *
-     * @param id UUID del cliente
+     * @param id ID del cliente
      * @return DTO del cliente
      */
-    ClienteDTO buscarPorId(UUID id);
-
-    /**
-     * Busca un cliente por código
-     *
-     * @param codigo código único del cliente
-     * @return DTO del cliente
-     */
-    ClienteDTO buscarPorCodigo(String codigo);
+    ClienteDTO buscarPorId(Long id);
 
     /**
      * Lista todos los clientes con paginación
@@ -63,22 +51,13 @@ public interface ClienteService {
     Page<ClienteDTO> listarTodos(Pageable pageable);
 
     /**
-     * Busca clientes por status
+     * Busca clientes por estado activo
      *
-     * @param status status del cliente
+     * @param activo estado activo del cliente
      * @param pageable configuración de paginación
      * @return página de clientes
      */
-    Page<ClienteDTO> buscarPorStatus(ClienteStatus status, Pageable pageable);
-
-    /**
-     * Busca clientes por propietario
-     *
-     * @param propietarioId UUID del usuario propietario
-     * @param pageable configuración de paginación
-     * @return página de clientes
-     */
-    Page<ClienteDTO> buscarPorPropietario(UUID propietarioId, Pageable pageable);
+    Page<ClienteDTO> buscarPorActivo(Boolean activo, Pageable pageable);
 
     /**
      * Busca clientes por término de búsqueda
@@ -92,61 +71,25 @@ public interface ClienteService {
     /**
      * Elimina un cliente (soft delete)
      *
-     * @param id UUID del cliente
+     * @param id ID del cliente
      */
-    void eliminar(UUID id);
+    void eliminar(Long id);
 
     /**
      * Activa un cliente
      *
-     * @param id UUID del cliente
-     * @param usuarioId UUID del usuario que realiza la acción
+     * @param id ID del cliente
+     * @param usuarioId ID del usuario que realiza la acción
      * @return DTO del cliente actualizado
      */
-    ClienteDTO activar(UUID id, UUID usuarioId);
+    ClienteDTO activar(Long id, Long usuarioId);
 
     /**
      * Desactiva un cliente
      *
-     * @param id UUID del cliente
-     * @param usuarioId UUID del usuario que realiza la acción
+     * @param id ID del cliente
+     * @param usuarioId ID del usuario que realiza la acción
      * @return DTO del cliente actualizado
      */
-    ClienteDTO desactivar(UUID id, UUID usuarioId);
-
-    /**
-     * Convierte un lead a prospecto
-     *
-     * @param id UUID del cliente
-     * @param usuarioId UUID del usuario que realiza la acción
-     * @return DTO del cliente actualizado
-     */
-    ClienteDTO convertirAProspecto(UUID id, UUID usuarioId);
-
-    /**
-     * Convierte un prospecto a cliente activo
-     *
-     * @param id UUID del cliente
-     * @param usuarioId UUID del usuario que realiza la acción
-     * @return DTO del cliente actualizado
-     */
-    ClienteDTO convertirACliente(UUID id, UUID usuarioId);
-
-    /**
-     * Agrega un cliente a la lista negra
-     *
-     * @param id UUID del cliente
-     * @param motivo motivo del blacklist
-     * @param usuarioId UUID del usuario que realiza la acción
-     * @return DTO del cliente actualizado
-     */
-    ClienteDTO agregarABlacklist(UUID id, String motivo, UUID usuarioId);
-
-    /**
-     * Cuenta clientes por status
-     *
-     * @param status status del cliente
-     * @return cantidad de clientes
-     */
-    long contarPorStatus(ClienteStatus status);
+    ClienteDTO desactivar(Long id, Long usuarioId);
 }

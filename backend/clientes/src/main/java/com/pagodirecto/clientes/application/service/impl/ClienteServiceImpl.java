@@ -4,7 +4,6 @@ import com.pagodirecto.clientes.application.dto.ClienteDTO;
 import com.pagodirecto.clientes.application.mapper.ClienteMapper;
 import com.pagodirecto.clientes.application.service.ClienteService;
 import com.pagodirecto.clientes.domain.Cliente;
-import com.pagodirecto.clientes.domain.ClienteStatus;
 import com.pagodirecto.clientes.infrastructure.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Implementación del servicio: Cliente
@@ -36,14 +34,10 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     @Transactional
-    public ClienteDTO crear(ClienteDTO clienteDTO, UUID usuarioId) {
-        log.info("Creando nuevo cliente con código: {}", clienteDTO.getCodigo());
+    public ClienteDTO crear(ClienteDTO clienteDTO, Long usuarioId) {
+        log.info("Creando nuevo cliente: {}", clienteDTO.getNombre());
 
         // Validar duplicados
-        if (clienteRepository.existsByCodigo(clienteDTO.getCodigo())) {
-            throw new IllegalArgumentException("Ya existe un cliente con el código: " + clienteDTO.getCodigo());
-        }
-
         if (clienteDTO.getEmail() != null && clienteRepository.existsByEmail(clienteDTO.getEmail())) {
             throw new IllegalArgumentException("Ya existe un cliente con el email: " + clienteDTO.getEmail());
         }
@@ -62,18 +56,13 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     @Transactional
-    public ClienteDTO actualizar(UUID id, ClienteDTO clienteDTO, UUID usuarioId) {
+    public ClienteDTO actualizar(Long id, ClienteDTO clienteDTO, Long usuarioId) {
         log.info("Actualizando cliente con ID: {}", id);
 
         Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + id));
 
-        // Validar cambios en código o email
-        if (!cliente.getCodigo().equals(clienteDTO.getCodigo()) &&
-            clienteRepository.existsByCodigo(clienteDTO.getCodigo())) {
-            throw new IllegalArgumentException("Ya existe un cliente con el código: " + clienteDTO.getCodigo());
-        }
-
+        // Validar cambios en email
         if (clienteDTO.getEmail() != null &&
             !clienteDTO.getEmail().equals(cliente.getEmail()) &&
             clienteRepository.existsByEmail(clienteDTO.getEmail())) {
@@ -91,18 +80,10 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public ClienteDTO buscarPorId(UUID id) {
+    public ClienteDTO buscarPorId(Long id) {
         log.debug("Buscando cliente con ID: {}", id);
         Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + id));
-        return clienteMapper.toDTO(cliente);
-    }
-
-    @Override
-    public ClienteDTO buscarPorCodigo(String codigo) {
-        log.debug("Buscando cliente con código: {}", codigo);
-        Cliente cliente = clienteRepository.findByCodigo(codigo)
-            .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con código: " + codigo));
         return clienteMapper.toDTO(cliente);
     }
 
@@ -114,16 +95,9 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public Page<ClienteDTO> buscarPorStatus(ClienteStatus status, Pageable pageable) {
-        log.debug("Buscando clientes por status: {} - página: {}", status, pageable.getPageNumber());
-        return clienteRepository.findByStatus(status, pageable)
-            .map(clienteMapper::toDTO);
-    }
-
-    @Override
-    public Page<ClienteDTO> buscarPorPropietario(UUID propietarioId, Pageable pageable) {
-        log.debug("Buscando clientes por propietario: {} - página: {}", propietarioId, pageable.getPageNumber());
-        return clienteRepository.findByPropietarioId(propietarioId, pageable)
+    public Page<ClienteDTO> buscarPorActivo(Boolean activo, Pageable pageable) {
+        log.debug("Buscando clientes activos: {} - página: {}", activo, pageable.getPageNumber());
+        return clienteRepository.findByActivo(activo, pageable)
             .map(clienteMapper::toDTO);
     }
 
@@ -136,7 +110,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     @Transactional
-    public void eliminar(UUID id) {
+    public void eliminar(Long id) {
         log.info("Eliminando cliente con ID: {}", id);
         Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + id));
@@ -146,7 +120,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     @Transactional
-    public ClienteDTO activar(UUID id, UUID usuarioId) {
+    public ClienteDTO activar(Long id, Long usuarioId) {
         log.info("Activando cliente con ID: {}", id);
         Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + id));
@@ -162,7 +136,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     @Transactional
-    public ClienteDTO desactivar(UUID id, UUID usuarioId) {
+    public ClienteDTO desactivar(Long id, Long usuarioId) {
         log.info("Desactivando cliente con ID: {}", id);
         Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + id));
@@ -174,59 +148,5 @@ public class ClienteServiceImpl implements ClienteService {
         log.info("Cliente desactivado exitosamente con ID: {}", id);
 
         return clienteMapper.toDTO(clienteActualizado);
-    }
-
-    @Override
-    @Transactional
-    public ClienteDTO convertirAProspecto(UUID id, UUID usuarioId) {
-        log.info("Convirtiendo lead a prospecto con ID: {}", id);
-        Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + id));
-
-        cliente.convertirAProspecto();
-        cliente.setUpdatedBy(usuarioId);
-
-        Cliente clienteActualizado = clienteRepository.save(cliente);
-        log.info("Lead convertido a prospecto exitosamente con ID: {}", id);
-
-        return clienteMapper.toDTO(clienteActualizado);
-    }
-
-    @Override
-    @Transactional
-    public ClienteDTO convertirACliente(UUID id, UUID usuarioId) {
-        log.info("Convirtiendo prospecto a cliente con ID: {}", id);
-        Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + id));
-
-        cliente.convertirACliente();
-        cliente.setUpdatedBy(usuarioId);
-
-        Cliente clienteActualizado = clienteRepository.save(cliente);
-        log.info("Prospecto convertido a cliente exitosamente con ID: {}", id);
-
-        return clienteMapper.toDTO(clienteActualizado);
-    }
-
-    @Override
-    @Transactional
-    public ClienteDTO agregarABlacklist(UUID id, String motivo, UUID usuarioId) {
-        log.info("Agregando cliente a blacklist con ID: {}", id);
-        Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + id));
-
-        cliente.agregarABlacklist(motivo);
-        cliente.setUpdatedBy(usuarioId);
-
-        Cliente clienteActualizado = clienteRepository.save(cliente);
-        log.info("Cliente agregado a blacklist exitosamente con ID: {}", id);
-
-        return clienteMapper.toDTO(clienteActualizado);
-    }
-
-    @Override
-    public long contarPorStatus(ClienteStatus status) {
-        log.debug("Contando clientes por status: {}", status);
-        return clienteRepository.countByStatus(status);
     }
 }
