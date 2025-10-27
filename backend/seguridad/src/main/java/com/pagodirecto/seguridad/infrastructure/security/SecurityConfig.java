@@ -46,7 +46,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:23000}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:23000,https://sig.pagodirecto.com,http://sig.pagodirecto.com,http://128.199.13.76,https://128.199.13.76}")
     private String allowedOrigins;
 
     @Value("${app.cors.allowed-methods:GET,POST,PUT,PATCH,DELETE,OPTIONS}")
@@ -150,8 +150,13 @@ public class SecurityConfig {
         log.info("Configurando CORS con orígenes permitidos: {}", origins);
         configuration.setAllowedOrigins(origins);
 
-        // También permitir patterns para desarrollo
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        // También permitir patterns para desarrollo y producción
+        configuration.setAllowedOriginPatterns(List.of(
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://sig.pagodirecto.com",
+            "https://*.pagodirecto.com"
+        ));
 
         // Parse allowed methods from environment variable
         List<String> methods = Arrays.asList(allowedMethods.split(","));

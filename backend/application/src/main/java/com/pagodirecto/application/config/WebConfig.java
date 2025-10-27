@@ -32,9 +32,13 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost:23000",
                         "http://127.0.0.1:3000",
                         "http://127.0.0.1:5173",
-                        "http://127.0.0.1:23000"
+                        "http://127.0.0.1:23000",
+                        "https://sig.pagodirecto.com",
+                        "http://sig.pagodirecto.com",
+                        "http://128.199.13.76",
+                        "https://128.199.13.76"
                 )
-                .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*")
+                .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*", "https://sig.pagodirecto.com", "https://*.pagodirecto.com")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials")
