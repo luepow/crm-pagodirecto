@@ -158,6 +158,8 @@ Hace:
 **Se activa:** Push/PR a `main` o `develop` con cambios en `frontend/**`
 
 Hace:
+- ✅ Instala pnpm 9.7.0
+- ✅ Instala dependencias del workspace con `pnpm install --frozen-lockfile`
 - ✅ Compila con Vite desde `frontend/apps/web/`
 - ✅ Ejecuta linter y type-check
 - ✅ Genera bundle de producción
@@ -176,8 +178,9 @@ Hace:
    - Sube artifact
 
 2. **Build Frontend:**
-   - Instala deps en `frontend/apps/web/`
-   - Compila con `npm run build`
+   - Instala pnpm 9.7.0
+   - Instala deps del workspace completo con `pnpm install --frozen-lockfile`
+   - Compila con `pnpm run build` desde `frontend/apps/web/`
    - Sube dist/ artifact
 
 3. **Deploy Backend:**
@@ -233,19 +236,18 @@ ssh root@128.199.13.76 "chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
 
 ### Workflow falla en "Install dependencies"
 
-**Error:** `npm error code ENOENT` o `package.json not found`
+**Error 1:** `npm error code ENOENT` o `package.json not found`
+**Solución:** Corregido usando `frontend/` como working-directory para pnpm install
 
-**Problema:** Este error ya fue corregido en el commit `9261323`
+**Error 2:** `npm error code EUNSUPPORTEDPROTOCOL` o `Unsupported URL Type "workspace:"`
+**Causa:** El proyecto es un **monorepo de pnpm**, no npm
+**Solución:** Workflows actualizados para usar pnpm en lugar de npm
 
-**Verificar:**
-```bash
-git log --oneline -1
-# Debe mostrar: 9261323 fix: corregir workflows de GitHub Actions para estructura monorepo
-```
-
-Si el workflow sigue usando `frontend/` en lugar de `frontend/apps/web/`, pull los últimos cambios:
+**Verificar última versión:**
 ```bash
 git pull origin main
+git log --oneline -3
+# Debe incluir commits sobre pnpm workspace
 ```
 
 ---

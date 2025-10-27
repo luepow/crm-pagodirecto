@@ -56,13 +56,18 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.7.0
+
       - name: Install dependencies
-        working-directory: frontend/apps/web
-        run: npm install
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
 
       - name: Build frontend
         working-directory: frontend/apps/web
-        run: npm run build
+        run: pnpm run build
 
       - name: Upload frontend build
         uses: actions/upload-artifact@v4

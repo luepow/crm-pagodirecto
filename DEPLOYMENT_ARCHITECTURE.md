@@ -220,6 +220,19 @@ pm2 startup
 
 ### Frontend
 
+⚠️ **IMPORTANTE:** El frontend es un **monorepo de pnpm** con workspace packages.
+
+**Estructura del monorepo:**
+```
+frontend/
+├── pnpm-workspace.yaml          # Configuración del workspace
+├── pnpm-lock.yaml               # Lockfile de pnpm
+├── apps/
+│   └── web/                     # Aplicación principal
+├── shared-ui/                   # Componentes compartidos
+└── design-tokens/               # Tokens de diseño
+```
+
 **Opción 1: Script Automático (Recomendado)**
 ```bash
 cd /Users/lperez/Workspace/Development/fullstack/crm_pd
@@ -228,17 +241,25 @@ cd /Users/lperez/Workspace/Development/fullstack/crm_pd
 
 El script hace:
 1. Limpia build anterior
-2. Compila con `vite build --mode production`
-3. Crea backup en servidor: `/var/www/crm-pd.backup.YYYYMMDD_HHMMSS`
-4. Sube archivos con rsync a `/var/www/crm-pd/`
-5. Recarga Nginx
+2. Verifica que pnpm esté instalado
+3. Instala dependencias del workspace: `pnpm install --frozen-lockfile`
+4. Compila desde `frontend/apps/web/`: `pnpm run build`
+5. Crea backup en servidor: `/var/www/crm-pd.backup.YYYYMMDD_HHMMSS`
+6. Sube archivos con rsync a `/var/www/crm-pd/`
+7. Recarga Nginx
 
 **Opción 2: Manual**
 ```bash
-# Local
-cd frontend/apps/web
-npm install
-npx vite build --mode production
+# Local - Instalar pnpm si no lo tienes
+npm install -g pnpm
+
+# Instalar dependencias del workspace
+cd frontend
+pnpm install --frozen-lockfile
+
+# Compilar
+cd apps/web
+pnpm run build
 
 # Deploy
 rsync -avz --delete dist/ root@128.199.13.76:/var/www/crm-pd/

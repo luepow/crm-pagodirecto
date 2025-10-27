@@ -24,6 +24,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 PROJECT_ROOT="/Users/lperez/Workspace/Development/fullstack/crm_pd"
+FRONTEND_ROOT="$PROJECT_ROOT/frontend"
 FRONTEND_DIR="$PROJECT_ROOT/frontend/apps/web"
 DIST_DIR="$FRONTEND_DIR/dist"
 
@@ -83,12 +84,19 @@ echo ""
 print_header "2. Compilando Frontend React"
 echo ""
 
-cd "$FRONTEND_DIR"
+cd "$FRONTEND_ROOT"
+
+# Verificar que pnpm esté instalado
+if ! command -v pnpm &> /dev/null; then
+    print_error "pnpm no está instalado"
+    print_info "Instálalo con: npm install -g pnpm"
+    exit 1
+fi
 
 # Verificar que node_modules existe
 if [ ! -d "node_modules" ]; then
-    print_info "Instalando dependencias npm..."
-    npm install
+    print_info "Instalando dependencias con pnpm..."
+    pnpm install --frozen-lockfile
 
     if [ $? -ne 0 ]; then
         print_error "La instalación de dependencias falló"
@@ -96,8 +104,9 @@ if [ ! -d "node_modules" ]; then
     fi
 fi
 
+cd "$FRONTEND_DIR"
 print_info "Compilando con Vite (modo producción)..."
-npx vite build --mode production
+pnpm run build
 
 if [ $? -ne 0 ]; then
     print_error "La compilación falló"
