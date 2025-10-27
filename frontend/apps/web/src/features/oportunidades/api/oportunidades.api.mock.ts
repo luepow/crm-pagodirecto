@@ -302,9 +302,9 @@ export const oportunidadesMockApi = {
       etapaNombre: `Etapa ${etapaId}`,
       updatedAt: new Date().toISOString(),
       updatedBy: 'current-user',
-    };
+    } as Oportunidad;
 
-    return mockOportunidades[index];
+    return mockOportunidades[index]!;
   },
 
   /**
@@ -318,18 +318,19 @@ export const oportunidadesMockApi = {
       throw new Error('Oportunidad no encontrada');
     }
 
+    const oportunidad = mockOportunidades[index]!;
     mockOportunidades[index] = {
-      ...mockOportunidades[index],
+      ...oportunidad,
       probabilidad: 100,
-      valorPonderado: mockOportunidades[index].valorEstimado,
+      valorPonderado: oportunidad.valorEstimado || 0,
       fechaCierreReal: new Date().toISOString().split('T')[0],
       etapaId: 'etapa-ganada',
       etapaNombre: 'Ganada',
       updatedAt: new Date().toISOString(),
       updatedBy: 'current-user',
-    };
+    } as Oportunidad;
 
-    return mockOportunidades[index];
+    return mockOportunidades[index]!;
   },
 
   /**
@@ -353,9 +354,9 @@ export const oportunidadesMockApi = {
       etapaNombre: 'Perdida',
       updatedAt: new Date().toISOString(),
       updatedBy: 'current-user',
-    };
+    } as Oportunidad;
 
-    return mockOportunidades[index];
+    return mockOportunidades[index]!;
   },
 
   /**

@@ -280,9 +280,9 @@ export const tareasMockApi = {
       fechaCompletada: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       updatedBy: 'current-user',
-    };
+    } as Tarea;
 
-    return mockTareas[index];
+    return mockTareas[index]!;
   },
 
   /**
@@ -301,9 +301,9 @@ export const tareasMockApi = {
       status: 'CANCELADA' as StatusTarea,
       updatedAt: new Date().toISOString(),
       updatedBy: 'current-user',
-    };
+    } as Tarea;
 
-    return mockTareas[index];
+    return mockTareas[index]!;
   },
 
   /**
@@ -323,9 +323,9 @@ export const tareasMockApi = {
       asignadoNombre: `Usuario ${asignadoA}`, // En prod vendría del backend
       updatedAt: new Date().toISOString(),
       updatedBy: 'current-user',
-    };
+    } as Tarea;
 
-    return mockTareas[index];
+    return mockTareas[index]!;
   },
 
   /**
@@ -334,7 +334,7 @@ export const tareasMockApi = {
   listarVencidas: async (page = 0, size = 20): Promise<Page<Tarea>> => {
     await delay(300);
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0]!;
     const vencidas = mockTareas.filter(
       (t) =>
         t.fechaVencimiento &&
@@ -367,7 +367,7 @@ export const tareasMockApi = {
     const today = new Date();
     const futureDate = new Date(today);
     futureDate.setDate(futureDate.getDate() + dias);
-    const futureDateStr = futureDate.toISOString().split('T')[0];
+    const futureDateStr = futureDate.toISOString().split('T')[0]!;
 
     const porVencer = mockTareas.filter(
       (t) =>
