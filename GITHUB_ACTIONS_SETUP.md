@@ -25,7 +25,7 @@ cd /Users/lperez/Workspace/Development/fullstack/crm_pd
 ./deploy-frontend.sh --remote
 ```
 
-Los workflows de GitHub Actions funcionan para CI (compilación y testing) pero el deployment automático necesita más configuración.
+**ACTUALIZACIÓN (2025-10-27):** Los workflows han sido corregidos para usar `frontend/apps/web/` como directorio de trabajo. Si configuras los GitHub Secrets correctamente, el deployment automático debería funcionar.
 
 ---
 
@@ -47,7 +47,7 @@ Para que el workflow `deploy-production.yml` funcione, necesitas configurar los 
 | `REMOTE_USER` | Usuario del servidor | `root` |
 | `REMOTE_HOST` | IP o dominio del servidor | `128.199.13.76` |
 | `REMOTE_BACKEND_PATH` | Path del backend en servidor | `/opt/crm-backend` |
-| `REMOTE_FRONTEND_PATH` | Path del frontend en servidor | `/opt/crm-frontend` |
+| `REMOTE_FRONTEND_PATH` | Path del frontend en servidor | `/var/www/crm-pd` |
 
 ---
 
@@ -98,7 +98,7 @@ cat ~/.ssh/id_rsa
 
 **Secret 5: REMOTE_FRONTEND_PATH**
 - Name: `REMOTE_FRONTEND_PATH`
-- Value: `/opt/crm-frontend`
+- Value: `/var/www/crm-pd`
 - Click **Add secret**
 
 ---

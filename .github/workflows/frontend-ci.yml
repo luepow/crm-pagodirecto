@@ -26,20 +26,20 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        working-directory: frontend
+        working-directory: frontend/apps/web
         run: npm install
 
       - name: Run linter
-        working-directory: frontend
+        working-directory: frontend/apps/web
         run: npm run lint || true
 
       - name: Run type check
-        working-directory: frontend
+        working-directory: frontend/apps/web
         run: npm run type-check || true
 
       - name: Build frontend
         working-directory: frontend/apps/web
-        run: npx vite build --mode production
+        run: npm run build
 
       - name: Upload build artifacts
         if: success()

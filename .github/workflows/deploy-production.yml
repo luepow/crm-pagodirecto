@@ -57,12 +57,12 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        working-directory: frontend
+        working-directory: frontend/apps/web
         run: npm install
 
       - name: Build frontend
         working-directory: frontend/apps/web
-        run: npx vite build --mode production
+        run: npm run build
 
       - name: Upload frontend build
         uses: actions/upload-artifact@v4
@@ -159,15 +159,14 @@ jobs:
       - name: Create backup on server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} \
-          "cd ${{ secrets.REMOTE_FRONTEND_PATH }} && \
-           [ -d dist ] && \
-           mv dist dist.backup.$(date +%Y%m%d_%H%M%S) || true"
+          "[ -d ${{ secrets.REMOTE_FRONTEND_PATH }} ] && \
+           cp -r ${{ secrets.REMOTE_FRONTEND_PATH }} ${{ secrets.REMOTE_FRONTEND_PATH }}.backup.$(date +%Y%m%d_%H%M%S) || true"
 
       - name: Upload frontend to server
         run: |
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
           dist/ \
-          ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:${{ secrets.REMOTE_FRONTEND_PATH }}/dist/
+          ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:${{ secrets.REMOTE_FRONTEND_PATH }}/
 
       - name: Reload Nginx
         run: |
