@@ -1,10 +1,13 @@
 package com.pagodirecto.application.api;
 
+import com.pagodirecto.seguridad.infrastructure.security.JwtTokenProvider;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -20,7 +23,10 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/v1/auth")
 @Slf4j
+@RequiredArgsConstructor
 public class AuthController {
+
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
@@ -32,11 +38,19 @@ public class AuthController {
 
         // Soportar múltiples usuarios de prueba
         if (("admin@pagodirecto.com".equals(email) || "admin@admin.com".equals(email)) && "admin123".equals(password)) {
-            String userId = UUID.randomUUID().toString();
+            UUID userId = UUID.randomUUID();
+            UUID unidadNegocioId = UUID.randomUUID();
 
-            // Mock tokens for development
-            String accessToken = "mock-access-token-" + userId;
-            String refreshToken = "mock-refresh-token-" + userId;
+            // Generate real JWT tokens using JwtTokenProvider
+            String accessToken = jwtTokenProvider.generateToken(
+                userId,
+                email,
+                unidadNegocioId,
+                Set.of("ADMIN"),
+                Set.of("READ", "WRITE", "DELETE")
+            );
+
+            String refreshToken = jwtTokenProvider.generateRefreshToken(userId);
 
             Map<String, Object> response = Map.of(
                     "accessToken", accessToken,
@@ -44,7 +58,7 @@ public class AuthController {
                     "tokenType", "Bearer",
                     "expiresIn", 86400L,
                     "user", Map.of(
-                            "id", userId,
+                            "id", userId.toString(),
                             "email", email,
                             "nombre", "Administrador",
                             "apellido", "Sistema",
