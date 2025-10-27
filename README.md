@@ -885,16 +885,28 @@ npm run test:e2e
 
 ### Documentación Disponible
 
-| Documento | Ubicación | Descripción |
-|-----------|-----------|-------------|
-| **CLAUDE.md** | `/CLAUDE.md` | Guía para desarrollo con Claude Code |
-| **Arquitectura del Sistema** | `/docs/c4/` | Diagramas C4 (contexto, contenedores, componentes) |
-| **Esquema de BD** | `/docs/erd/database-schema.md` | Documentación completa del modelo de datos |
-| **Seguridad de BD** | `/docs/erd/database-security-guide.md` | Guía de seguridad y RLS |
-| **API Documentation** | `http://localhost:8080/swagger-ui.html` | OpenAPI/Swagger interactivo |
-| **Docker Infrastructure** | `/infra/docker/README.md` | Guía de despliegue y operaciones |
-| **Frontend Guide** | `/frontend/apps/web/README.md` | Guía de desarrollo frontend |
-| **ADRs** | `/docs/adrs/` | Decisiones de arquitectura documentadas |
+Toda la documentación del proyecto está organizada en la carpeta [`docs/`](docs/README.md):
+
+| Categoría | Documentos Clave | Descripción |
+|-----------|------------------|-------------|
+| **🚀 Setup** | [`docs/setup/`](docs/setup/) | Guías de inicio rápido y configuración inicial |
+| | [Guía de Inicio Rápido](docs/setup/GUIA_INICIO_RAPIDO.md) | Instalación y primeros pasos (Español) |
+| | [GitHub Actions Setup](docs/setup/GITHUB_ACTIONS_SETUP.md) | Configuración de CI/CD |
+| **📦 Deployment** | [`docs/deployment/`](docs/deployment/) | Arquitectura y guías de deployment |
+| | [Deployment Architecture](docs/deployment/DEPLOYMENT_ARCHITECTURE.md) | Arquitectura completa de producción |
+| | [Production Guide](docs/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md) | Guía paso a paso para producción |
+| **📋 Proyecto** | [`docs/project/`](docs/project/) | Documentación del proyecto y releases |
+| | [Release Notes v1.0.0](docs/project/RELEASE_NOTES_v1.0.0.md) | Notas de la versión actual |
+| | [QA Certification Report](docs/project/QA_CERTIFICATION_REPORT.md) | Reporte de certificación QA |
+| **💻 Desarrollo** | | |
+| | [CLAUDE.md](CLAUDE.md) | **⚠️ Directivas para Claude Code** (mantener en raíz) |
+| | [Esquema de BD](docs/erd/database-schema.md) | Modelo de datos completo |
+| | [Seguridad de BD](docs/erd/database-security-guide.md) | Guía de seguridad y RLS |
+| **🔗 APIs** | | |
+| | [Swagger UI](http://localhost:8080/swagger-ui.html) | Documentación interactiva de API |
+| | [OpenAPI JSON](http://localhost:8080/api-docs) | Especificación OpenAPI 3.0 |
+
+**📖 Ver índice completo:** [`docs/README.md`](docs/README.md)
 
 ### API Documentation
 
