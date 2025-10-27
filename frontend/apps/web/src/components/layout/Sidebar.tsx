@@ -17,8 +17,14 @@ import {
   BarChart3,
   Settings,
   ChevronLeft,
+  Shield,
+  FileText,
+  DollarSign,
 } from 'lucide-react';
 import { cn } from '@shared-ui/utils';
+import { useAuthStore } from '../../lib/stores/authStore';
+
+type UserRole = 'ADMIN' | 'MANAGER' | 'SALES_REP' | 'USER';
 
 interface NavItem {
   label: string;
@@ -26,6 +32,7 @@ interface NavItem {
   href: string;
   badge?: number;
   comingSoon?: boolean;
+  roles?: UserRole[]; // Roles que pueden ver este menú. Si no se especifica, todos lo ven
 }
 
 const navItems: NavItem[] = [
@@ -33,38 +40,65 @@ const navItems: NavItem[] = [
     label: 'Dashboard',
     icon: <LayoutDashboard size={20} />,
     href: '/dashboard',
+    // Todos los roles pueden ver el dashboard
   },
   {
     label: 'Clientes',
     icon: <Users size={20} />,
     href: '/clientes',
+    roles: ['ADMIN', 'MANAGER', 'SALES_REP'], // USER no puede gestionar clientes
   },
   {
     label: 'Oportunidades',
     icon: <Target size={20} />,
     href: '/oportunidades',
+    roles: ['ADMIN', 'MANAGER', 'SALES_REP'],
   },
   {
     label: 'Tareas',
     icon: <CheckSquare size={20} />,
     href: '/tareas',
+    // Todos pueden ver tareas
   },
   {
     label: 'Productos',
     icon: <Package size={20} />,
     href: '/productos',
+    roles: ['ADMIN', 'MANAGER'],
   },
   {
     label: 'Ventas',
     icon: <ShoppingCart size={20} />,
     href: '/ventas',
+    roles: ['ADMIN', 'MANAGER', 'SALES_REP'],
+    comingSoon: true,
+  },
+  {
+    label: 'Pagos',
+    icon: <DollarSign size={20} />,
+    href: '/pagos',
+    roles: ['ADMIN', 'MANAGER'],
     comingSoon: true,
   },
   {
     label: 'Reportes',
     icon: <BarChart3 size={20} />,
     href: '/reportes',
+    roles: ['ADMIN', 'MANAGER'],
     comingSoon: true,
+  },
+  {
+    label: 'Contratos',
+    icon: <FileText size={20} />,
+    href: '/contratos',
+    roles: ['ADMIN', 'MANAGER'],
+    comingSoon: true,
+  },
+  {
+    label: 'Seguridad',
+    icon: <Shield size={20} />,
+    href: '/seguridad',
+    roles: ['ADMIN'], // Solo ADMIN puede acceder a gestión de usuarios/roles/permisos
   },
 ];
 
@@ -78,6 +112,27 @@ interface SidebarProps {
  */
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation();
+  const { user } = useAuthStore();
+
+  // Filtrar menús según el rol del usuario
+  const visibleNavItems = React.useMemo(() => {
+    if (!user) return navItems;
+
+    // ADMIN siempre ve todos los menús
+    if (user.rol === 'ADMIN') {
+      return navItems;
+    }
+
+    // Para otros roles, filtrar según permisos
+    return navItems.filter(item => {
+      // Si no tiene roles definidos, todos pueden verlo
+      if (!item.roles || item.roles.length === 0) {
+        return true;
+      }
+      // Verificar si el rol del usuario está en la lista de roles permitidos
+      return item.roles.includes(user.rol);
+    });
+  }, [user]);
 
   return (
     <>
@@ -119,7 +174,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.href;
 
             return (
