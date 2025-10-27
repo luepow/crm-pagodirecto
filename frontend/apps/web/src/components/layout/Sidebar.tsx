@@ -18,6 +18,8 @@ import {
   Settings,
   ChevronLeft,
   Shield,
+  Building2,
+  UserCog,
 } from 'lucide-react';
 import { cn } from '@shared-ui/utils';
 import { useAuthStore } from '../../lib/stores/authStore';
@@ -75,6 +77,18 @@ const navItems: NavItem[] = [
     icon: <BarChart3 size={20} />,
     href: '/reportes',
     roles: ['ADMIN', 'MANAGER'],
+  },
+  {
+    label: 'Departamentos',
+    icon: <Building2 size={20} />,
+    href: '/departamentos',
+    roles: ['ADMIN', 'MANAGER'],
+  },
+  {
+    label: 'Usuarios',
+    icon: <UserCog size={20} />,
+    href: '/usuarios',
+    roles: ['ADMIN'],
   },
   {
     label: 'Seguridad',
